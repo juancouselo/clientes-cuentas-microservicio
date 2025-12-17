@@ -1,0 +1,247 @@
+openapi: 3.0.3
+info:
+  title: Bank Account Management Microservice
+  description: REST API for managing clients and bank accounts using Hexagonal Architecture.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: clients
+    description: Operations related to bank clients
+  - name: accounts
+    description: Operations related to bank accounts
+
+paths:
+  /clientes:
+    get:
+      tags:
+        - clients
+      summary: Get all clients
+      description: Retrieves a list of all clients along with their personal data and associated bank accounts.
+      operationId: getAllClients
+      responses:
+        '200':
+          description: Successfully retrieved the list of clients.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClienteResponse'
+
+  /clientes/mayores-de-edad:
+    get:
+      tags:
+        - clients
+      summary: Get adult clients
+      description: Retrieves a list of clients who are 18 years old or older.
+      operationId: getAdultClients
+      responses:
+        '200':
+          description: Successfully retrieved the list of adult clients.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClienteResponse'
+
+  /clientes/con-cuenta-superior-a/{cantidad}:
+    get:
+      tags:
+        - clients
+      summary: Get clients with high balance
+      description: Retrieves clients whose total sum of all associated accounts exceeds the specified amount.
+      operationId: getClientsWithBalanceOver
+      parameters:
+        - name: cantidad
+          in: path
+          description: Minimum threshold amount (Double).
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: Successfully retrieved the filtered list of clients.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClienteResponse'
+
+  /clientes/{dni}:
+    get:
+      tags:
+        - clients
+      summary: Get client by DNI
+      description: Retrieves detailed information of a specific client and their bank accounts using their National ID (DNI).
+      operationId: getClientByDni
+      parameters:
+        - name: dni
+          in: path
+          description: Client's National ID (DNI).
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '404':
+          description: Client not found.
+
+  /cuentas:
+    post:
+      tags:
+        - accounts
+      summary: Create a new bank account
+      description: |
+        Creates a new bank account. 
+        - If the client exists, the account is associated with them.
+        - If the client does not exist, a new client is automatically created and the account is associated.
+      operationId: createAccount
+      requestBody:
+        description: Data required to create a new account.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCuentaRequest'
+      responses:
+        '201':
+          description: Account successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '400':
+          description: Invalid input data.
+
+  /cuentas/{idCuenta}:
+    put:
+      tags:
+        - accounts
+      summary: Update account balance
+      description: Updates the total balance of the specified bank account.
+      operationId: updateAccountBalance
+      parameters:
+        - name: idCuenta
+          in: path
+          description: The ID of the bank account to update.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Payload containing the new balance.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCuentaRequest'
+      responses:
+        '200':
+          description: Balance updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '404':
+          description: Account not found.
+
+components:
+  schemas:
+    CreateCuentaRequest:
+      type: object
+      required:
+        - dniCliente
+        - tipoCuenta
+        - total
+      properties:
+        dniCliente:
+          type: string
+          description: Client's National ID (DNI).
+          example: "11111111A"
+        tipoCuenta:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        total:
+          type: number
+          format: double
+          description: Initial balance.
+          example: 50000.0
+
+    UpdateCuentaRequest:
+      type: object
+      required:
+        - total
+      properties:
+        total:
+          type: number
+          format: double
+          description: New total balance.
+          example: 180000.0
+
+    ClienteResponse:
+      type: object
+      properties:
+        dni:
+          type: string
+          description: Client's National ID (PK).
+          example: "11111111A"
+        nombre:
+          type: string
+          description: First name.
+          example: "Juan"
+        apellido1:
+          type: string
+          description: First surname.
+          example: "Pérez"
+        apellido2:
+          type: string
+          description: Second surname.
+          example: "López"
+        fechaNacimiento:
+          type: string
+          format: date
+          description: Date of birth (YYYY-MM-DD).
+          example: "1959-09-12"
+        cuentas:
+          type: array
+          description: List of associated bank accounts.
+          items:
+            $ref: '#/components/schemas/CuentaResponse'
+
+    CuentaResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique account identifier.
+          example: 1
+        dniCliente:
+          type: string
+          description: Foreign key to the client's DNI.
+          example: "11111111A"
+        tipoCuenta:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        total:
+          type: number
+          format: double
+          description: Current account balance.
+          example: 150000.0
+
+    AccountTypeEnum:
+      type: string
+      description: Type of the bank account.
+      enum:
+        - NORMAL
+        - PREMIUM
+        - JUNIOR
+      example: "NORMAL"
