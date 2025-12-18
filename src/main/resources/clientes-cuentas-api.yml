@@ -167,6 +167,7 @@ components:
         dniCliente:
           type: string
           description: Client's National ID (DNI).
+          pattern: '^[0-9]{8}[A-Z]$'
           example: "11111111A"
         tipoCuenta:
           $ref: '#/components/schemas/AccountTypeEnum'
@@ -174,6 +175,7 @@ components:
           type: number
           format: double
           description: Initial balance.
+          minimum: 0
           example: 50000.0
 
     UpdateCuentaRequest:

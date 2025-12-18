@@ -7,6 +7,7 @@ import com.bank.clientes_cuentas_microservicio.application.port.in.UpdateSaldoUs
 import com.bank.clientes_cuentas_microservicio.infrastructure.adapters.in.web.dto.CreateCuentaRequest;
 import com.bank.clientes_cuentas_microservicio.infrastructure.adapters.in.web.dto.UpdateCuentaRequest;
 import com.bank.clientes_cuentas_microservicio.infrastructure.adapters.in.web.mapper.CuentaWebMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class CuentaController {
     private final CuentaWebMapper cuentaWebMapper;
 
     @PostMapping
-    public ResponseEntity<CuentaDto> createAccount(@RequestBody CreateCuentaRequest request) {
+    public ResponseEntity<CuentaDto> createAccount(@RequestBody @Valid CreateCuentaRequest request) {
         CreateCuentaCommand command = cuentaWebMapper.toCommand(request);
         
         CuentaDto created = createCuentaUseCase.execute(command);
