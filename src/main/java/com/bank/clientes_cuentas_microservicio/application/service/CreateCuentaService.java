@@ -2,6 +2,7 @@ package com.bank.clientes_cuentas_microservicio.application.service;
 
 import com.bank.clientes_cuentas_microservicio.application.dto.CuentaDto;
 import com.bank.clientes_cuentas_microservicio.application.mapper.CuentaMapper;
+import com.bank.clientes_cuentas_microservicio.application.port.in.CreateCuentaCommand;
 import com.bank.clientes_cuentas_microservicio.application.port.in.CreateCuentaUseCase;
 import com.bank.clientes_cuentas_microservicio.application.port.out.ClienteRepositoryPort;
 import com.bank.clientes_cuentas_microservicio.application.port.out.CuentaRepositoryPort;
@@ -21,7 +22,9 @@ public class CreateCuentaService implements CreateCuentaUseCase {
     private final CuentaMapper cuentaMapper;
 
     @Override
-    public CuentaDto execute(CuentaBancaria cuenta) {
+    public CuentaDto execute(CreateCuentaCommand command) {
+        CuentaBancaria cuenta = cuentaMapper.toDomain(command);
+
         Optional<Cliente> existingCliente = clienteRepository.findByDni(cuenta.getDniCliente());
 
         if (existingCliente.isEmpty()) {

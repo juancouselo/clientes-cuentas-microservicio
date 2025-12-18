@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface ClienteRepository extends JpaRepository<ClienteEntity, String> {
 
-    @Query("SELECT c FROM ClienteEntity c WHERE c.cuentas IS EMPTY AND c.fechaNacimiento <= :fechaLimite")
+    @Query("SELECT c FROM ClienteEntity c WHERE c.fechaNacimiento <= :fechaLimite")
     List<ClienteEntity> findAdultosSinCuentas(@Param("fechaLimite") LocalDate fechaLimite);
 
     @Query("SELECT DISTINCT c FROM ClienteEntity c JOIN c.cuentas cu WHERE cu.total > :saldo")
