@@ -77,4 +77,16 @@ class CuentasControllerIT {
                 .andExpect(jsonPath("$.id", is(accountId.intValue())))
                 .andExpect(jsonPath("$.total", is(newBalance)));
     }
+
+    @Test
+    void updateAccountBalance_WhenAccountDoesNotExist_ShouldReturnNotFound() throws Exception {
+        Long nonExistentId = 999L;
+        UpdateCuentaRequest request = new UpdateCuentaRequest();
+        request.setTotal(100.0);
+
+        mockMvc.perform(put("/cuentas/{idCuenta}", nonExistentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
 }

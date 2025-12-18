@@ -55,4 +55,11 @@ class ClientesControllerIT {
                 .andExpect(jsonPath("$.dni", is(dni)))
                 .andExpect(jsonPath("$.nombre", is("Juan")));
     }
+
+    @Test
+    void getClientByDni_WhenClientDoesNotExist_ShouldReturnNotFound() throws Exception {
+        String nonExistentDni = "00000000X";
+        mockMvc.perform(get("/clientes/{dni}", nonExistentDni))
+                .andExpect(status().isNotFound());
+    }
 }
