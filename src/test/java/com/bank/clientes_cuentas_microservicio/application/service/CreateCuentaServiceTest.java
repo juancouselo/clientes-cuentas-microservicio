@@ -2,6 +2,7 @@ package com.bank.clientes_cuentas_microservicio.application.service;
 
 import com.bank.clientes_cuentas_microservicio.application.dto.CuentaDto;
 import com.bank.clientes_cuentas_microservicio.application.mapper.CuentaMapper;
+import com.bank.clientes_cuentas_microservicio.application.port.in.CreateCuentaCommand;
 import com.bank.clientes_cuentas_microservicio.application.port.out.ClienteRepositoryPort;
 import com.bank.clientes_cuentas_microservicio.application.port.out.CuentaRepositoryPort;
 import com.bank.clientes_cuentas_microservicio.domain.model.Cliente;
@@ -34,10 +35,18 @@ class CreateCuentaServiceTest {
     private CreateCuentaService createCuentaService;
 
     private CuentaBancaria cuenta;
+    private CreateCuentaCommand command;
 
     @BeforeEach
     void setUp() {
         createCuentaService = new CreateCuentaService(clienteRepository, cuentaRepository, cuentaMapper);
+        
+        command = CreateCuentaCommand.builder()
+                .dniCliente("12345678A")
+                .tipoCuenta(TipoCuenta.NORMAL)
+                .total(1000.0)
+                .build();
+
         cuenta = CuentaBancaria.builder()
                 .dniCliente("12345678A")
                 .tipoCuenta(TipoCuenta.NORMAL)
@@ -47,26 +56,26 @@ class CreateCuentaServiceTest {
 
     @Test
     void execute_WhenClienteExists_ShouldOnlySaveCuenta() {
-        when(clienteRepository.findByDni(cuenta.getDniCliente())).thenReturn(Optional.of(new Cliente()));
+        when(clienteRepository.findByDni(command.getDniCliente())).thenReturn(Optional.of(new Cliente()));
         when(cuentaRepository.save(any(CuentaBancaria.class))).thenReturn(cuenta);
 
-        CuentaDto result = createCuentaService.execute(cuenta);
+        CuentaDto result = createCuentaService.execute(command);
 
         assertNotNull(result);
-        assertEquals(cuenta.getDniCliente(), result.getDniCliente());
+        assertEquals(command.getDniCliente(), result.getDniCliente());
         verify(clienteRepository, never()).saveCliente(any(Cliente.class));
-        verify(cuentaRepository, times(1)).save(cuenta);
+        verify(cuentaRepository, times(1)).save(any(CuentaBancaria.class));
     }
 
     @Test
     void execute_WhenClienteDoesNotExist_ShouldSaveClienteAndCuenta() {
-        when(clienteRepository.findByDni(cuenta.getDniCliente())).thenReturn(Optional.empty());
+        when(clienteRepository.findByDni(command.getDniCliente())).thenReturn(Optional.empty());
         when(cuentaRepository.save(any(CuentaBancaria.class))).thenReturn(cuenta);
 
-        CuentaDto result = createCuentaService.execute(cuenta);
+        CuentaDto result = createCuentaService.execute(command);
 
         assertNotNull(result);
         verify(clienteRepository, times(1)).saveCliente(any(Cliente.class));
-        verify(cuentaRepository, times(1)).save(cuenta);
+        verify(cuentaRepository, times(1)).save(any(CuentaBancaria.class));
     }
 }
