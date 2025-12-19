@@ -71,6 +71,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ClienteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /clientes/{dni}:
     get:
@@ -93,6 +95,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClienteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           description: Client not found.
 
@@ -121,7 +125,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CuentaResponse'
         '400':
-          description: Invalid input data.
+          $ref: '#/components/responses/BadRequest'
 
   /cuentas/{idCuenta}:
     put:
@@ -152,6 +156,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CuentaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           description: Account not found.
 
@@ -247,3 +253,28 @@ components:
         - PREMIUM
         - JUNIOR
       example: "NORMAL"
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 400
+        message:
+          type: string
+          description: Error summary message.
+          example: "Validation failed"
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+
+
+  responses:
+    BadRequest:
+      description: Invalid request or validation error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
